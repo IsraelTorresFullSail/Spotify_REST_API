@@ -8,7 +8,7 @@ import dotenv from 'dotenv'
 
 import { notFound, errorHandler } from './middlewere/errorMiddlewere.js'
 //import connectDB from './config/db.js'
-//import routes from './routes/index.js'
+import routes from './routes/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
@@ -35,11 +35,14 @@ app.get('/', (req, res) => {
   res.send(`API  is running in ${process.env.NODE_ENV} ...`)
 })
 
+const __dirname = path.resolve()
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')))
+
 /** ROUTES */
-// Object.keys(routes).forEach((routeKey) => {
-//     const route = routes[routeKey]
-//     app.use(route.path, route.router)
-//   })
+Object.keys(routes).forEach((routeKey) => {
+  const route = routes[routeKey]
+  app.use(route.path, route.router)
+})
 
 app.use(notFound)
 
