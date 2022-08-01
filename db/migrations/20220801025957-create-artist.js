@@ -1,22 +1,13 @@
-module.exports = {
+export default {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Tracks', {
+    await queryInterface.createTable('Artists', {
       id: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
       },
-      isrc: {
-        type: Sequelize.STRING,
-      },
-      spotifyImageUri: {
-        type: Sequelize.STRING,
-      },
-      title: {
-        type: Sequelize.STRING,
-      },
-      artistNameList: {
+      artistName: {
         type: Sequelize.STRING,
       },
       createdAt: {
@@ -30,6 +21,6 @@ module.exports = {
     })
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Tracks')
+    await queryInterface.dropTable('Artists')
   },
 }

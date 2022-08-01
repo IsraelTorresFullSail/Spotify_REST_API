@@ -31,8 +31,6 @@ export const createTrackMetadata = asyncHandler(async (req, res, next) => {
       json: true,
     }
     request.post(authOptions, (error, response, body) => {
-      console.log('login error: ', error)
-      console.log('statusCode: ', response.statusCode)
       if (!error && response.statusCode === 200) {
         var token = body.access_token
 
@@ -48,6 +46,7 @@ export const createTrackMetadata = asyncHandler(async (req, res, next) => {
         axios
           .get(api, config)
           .then(({ data }) => {
+            console.log(JSON.stringify(data))
             res.json(data)
           })
           .catch((error) => console.log(error))
