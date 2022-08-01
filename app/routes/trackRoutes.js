@@ -1,8 +1,6 @@
-import express from 'express'
-import { createTrackMetadata } from '../controllers/trackControllers.js'
-
-const router = express.Router()
+const router = require('express').Router()
+const { createTrackMetadata } = require('../controllers/trackControllers')
 
 router.post('/', createTrackMetadata)
 
-export default router
+module.exports = router

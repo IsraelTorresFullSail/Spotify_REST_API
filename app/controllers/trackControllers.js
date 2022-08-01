@@ -1,6 +1,8 @@
-import asyncHandler from 'express-async-handler'
-import axios from 'axios'
-import request from 'request'
+const { Artist, Track, Sequelize } = require('../models')
+const { throwError, throwIf } = require('../utils/errorHandling')
+const asyncHandler = require('express-async-handler')
+const axios = require('axios')
+const request = require('request')
 
 const client_id =
   process.env.SPOTIFY_CLIENT_ID || '94a838153d8c44d8ad8026b87567be99'
@@ -12,7 +14,7 @@ const client_secret =
  * @route: /api/tracks
  * @access: Private
  */
-export const createTrackMetadata = asyncHandler(async (req, res, next) => {
+exports.createTrackMetadata = asyncHandler(async (req, res, next) => {
   try {
     const { isrc } = req.body
     const api = `https://api.spotify.com/v1/search?q=isrc:${isrc}&type=track`
@@ -33,9 +35,7 @@ export const createTrackMetadata = asyncHandler(async (req, res, next) => {
     request.post(authOptions, (error, response, body) => {
       if (!error && response.statusCode === 200) {
         var token = body.access_token
-
         // Fetch API to create a track using a single endpoint which takes a single value "ISRC"
-
         const config = {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -45,9 +45,50 @@ export const createTrackMetadata = asyncHandler(async (req, res, next) => {
 
         axios
           .get(api, config)
-          .then(({ data }) => {
-            console.log(JSON.stringify(data))
-            res.json(data)
+          //.then(({ data }) => JSON.stringify(data))
+          .then(async ({ data }) => {
+            console.log(data)
+            const highPopularity = data.tracks.items.reduce((prev, current) => {
+              if (+current.popularity > +prev.popularity) {
+                return current
+              } else {
+                return prev
+              }
+            })
+
+            const newArtist = await Artist.create({
+              artistName: highPopularity.album.artists[0].name,
+            })
+              .catch(
+                Sequelize.ValidationError,
+                throwError(406, 'Validation Error')
+              )
+              .catch(
+                Sequelize.BaseError,
+                throwError(
+                  500,
+                  'A database error has occurred please try again.'
+                )
+              )
+            await Track.create({
+              isrc: isrc,
+              spotifyImageUri: highPopularity.uri,
+              title: highPopularity.name,
+              artistId: newArtist.id,
+            })
+              .catch(
+                Sequelize.ValidationError,
+                throwError(406, 'Validation Error')
+              )
+              .catch(
+                Sequelize.BaseError,
+                throwError(
+                  500,
+                  'A database error has occurred please try again.'
+                )
+              )
+
+            res.status(201).json({ message: 'Track create success' })
           })
           .catch((error) => console.log(error))
       }

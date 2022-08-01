@@ -1,4 +1,4 @@
-import app from './app/app.js'
+const app = require('./app/app.js')
 
 const PORT = process.env.PORT || 8000
 
@@ -9,4 +9,4 @@ app.listen(
   )
 )
 
-export const server = app
+module.exports = app

@@ -3,6 +3,7 @@
     "DEBUG": "api:*",
     "SECRET": "t2j6AW0rSrBuLJtW",
     "CLIENT_ID": "2228117327.575354274035",
-    "CLIENT_SECRET": "66e8071669440f21b0a3c8b9006073b5"
+    "CLIENT_SECRET": "66e8071669440f21b0a3c8b9006073b5",
+    "DATABASE_URL": "postgres://mliknhpeznxojx:0fd62bf2f91aedade5c57c62d8cfa58dab1cd207119eea1cc7d6d61f53e79f05@ec2-52-204-157-26.compute-1.amazonaws.com:5432/d43egbi5gqc9lf?ssl=true"
   }
 }

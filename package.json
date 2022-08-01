@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A REST-API for storing metadata of music tracks to a Relational Database, fetching the metadata from the external Spotify REST API.",
   "main": "server.js",
-  "type": "module",
   "engines": {
     "node": "17.8.0",
     "npm": "8.5.5"

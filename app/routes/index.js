@@ -1,11 +1,11 @@
-import trackRoutes from './trackRoutes.js'
+const trackRoutes = require('./trackRoutes')
 
 const entryPoint = '/api'
 
 /**
  * Object for map routes to Mongoose models (mainly for history log purpose)
  */
-export default {
+module.exports = {
   trackModel: {
     path: `${entryPoint}/tracks`,
     router: trackRoutes,
