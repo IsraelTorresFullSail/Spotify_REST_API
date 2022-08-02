@@ -1,6 +1,6 @@
 const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
-  class Artist extends Model {
+  class Tracks extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -8,10 +8,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Artist.hasMany(models.Track, { foreignKey: 'artistId' })
+      Tracks.belongsTo(models.Artists, { foreignKey: 'artistId' })
     }
   }
-  Artist.init(
+  Tracks.init(
     {
       id: {
         defaultValue: DataTypes.UUIDV4,
@@ -21,12 +21,14 @@ module.exports = (sequelize, DataTypes) => {
           isUUID: { args: 4, msg: 'Id not valid, please try again' },
         },
       },
-      artistName: DataTypes.STRING,
+      isrc: DataTypes.STRING,
+      spotifyImageUri: DataTypes.STRING,
+      title: DataTypes.STRING,
     },
     {
       sequelize,
-      modelName: 'Artist',
+      modelName: 'Tracks',
     }
   )
-  return Artist
+  return Tracks
 }

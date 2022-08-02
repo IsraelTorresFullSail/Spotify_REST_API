@@ -1,4 +1,4 @@
-const { Artist, Track, Sequelize } = require('../models')
+const { Artists, Tracks, Sequelize } = require('../models')
 const { throwError, throwIf } = require('../utils/errorHandling')
 const asyncHandler = require('express-async-handler')
 const axios = require('axios')
@@ -45,9 +45,8 @@ exports.createTrackMetadata = asyncHandler(async (req, res, next) => {
 
         axios
           .get(api, config)
-          //.then(({ data }) => JSON.stringify(data))
           .then(async ({ data }) => {
-            console.log(data)
+            // In case the SpotifyAPI returns multiple tracks take the track with highest popularity
             const highPopularity = data.tracks.items.reduce((prev, current) => {
               if (+current.popularity > +prev.popularity) {
                 return current
@@ -56,47 +55,104 @@ exports.createTrackMetadata = asyncHandler(async (req, res, next) => {
               }
             })
 
-            const newArtist = await Artist.create({
+            // Store the ISRC and the additional metadat into the DB
+            const newArtist = await Artists.create({
               artistName: highPopularity.album.artists[0].name,
             })
               .catch(
-                Sequelize.ValidationError,
+                new Sequelize.ValidationError(),
                 throwError(406, 'Validation Error')
               )
               .catch(
-                Sequelize.BaseError,
+                new Sequelize.BaseError(),
                 throwError(
                   500,
                   'A database error has occurred please try again.'
                 )
               )
-            await Track.create({
+
+            await Tracks.create({
               isrc: isrc,
               spotifyImageUri: highPopularity.uri,
               title: highPopularity.name,
               artistId: newArtist.id,
             })
               .catch(
-                Sequelize.ValidationError,
+                new Sequelize.ValidationError(),
                 throwError(406, 'Validation Error')
               )
               .catch(
-                Sequelize.BaseError,
+                new Sequelize.BaseError(),
                 throwError(
                   500,
                   'A database error has occurred please try again.'
                 )
               )
 
-            res.status(201).json({ message: 'Track create success' })
+            res
+              .status(201)
+              .json({ message: 'Track Metadata created successfully' })
           })
           .catch((error) => console.log(error))
       }
     })
+  } catch (error) {
+    next(error)
+  }
+})
 
-    // 2- Get the {Sporify Image URI, Title, Artist Name List} from the fetch result
-    // 3- In case the SpotifyAPI returns multiple tracks take the track with highest popularity
-    // 4- Store the ISRC and the additional metadat into the DB
+/**
+ * @description: Get a track by ISRC
+ * @route: /api/tracks/isrc
+ * @access: Public
+ */
+exports.getTrackMetadataByISRC = asyncHandler(async (req, res, next) => {
+  try {
+    const { isrc } = req.body
+
+    const track = await Tracks.findAll({
+      where: { isrc },
+    }).catch(throwError(500, 'A database error has occurred please try again.'))
+
+    res.status(201).json({
+      track,
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+/**
+ * @description: Get a track by Artist
+ * @route: /api/tracks/artist
+ * @access: Public
+ */
+exports.getTracksMetadataByArtist = asyncHandler(async (req, res, next) => {
+  try {
+    const { artistName } = req.body
+
+    const artists = await Artists.findAll({
+      where: { artistName },
+    }).catch(throwError(500, 'A database error has occurred please try again.'))
+
+    let tracks = []
+    await artists.reduce(async (prev, artist) => {
+      await prev
+
+      let track = await Tracks.findAll({
+        where: { artistId: artist.id },
+      }).catch(
+        throwError(500, 'A database error has occurred please try again.')
+      )
+
+      tracks.push(track)
+
+      return Promise.resolve()
+    }, Promise.resolve())
+
+    res.status(201).json({
+      tracks,
+    })
   } catch (error) {
     next(error)
   }

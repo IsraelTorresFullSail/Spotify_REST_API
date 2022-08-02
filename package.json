@@ -8,6 +8,8 @@
     "npm": "8.5.5"
   },
   "scripts": {
+    "install-api": "npm install",
+    "build-api": "npx sequelize-cli db:migrate",
     "start": "node --experimental-json-modules server.js",
     "server": "NODE_ENV=development nodemon --experimental-json-modules server.js"
   },
